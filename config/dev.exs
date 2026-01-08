@@ -3,10 +3,10 @@ config :ash, policies: [show_policy_breakdowns?: true]
 
 # Configure your database
 config :tunez, Tunez.Repo,
-  username: "postgres",
-  password: "postgres",
+  username: "phoenix",
+  password: "nex3cute",
   hostname: "localhost",
-  database: "tunez_dev",
+  database: "tunez",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
