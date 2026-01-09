@@ -66,7 +66,7 @@ defmodule TunezWeb.Artists.FormLive do
         socket =
           socket
           |> put_flash(:info, "Artist saved successfully")
-          |> push_navigate(to: ~p"/artist/#{artist}")
+          |> push_navigate(to: ~p"/artists/#{artist}")
 
         {:noreply, socket}
 
