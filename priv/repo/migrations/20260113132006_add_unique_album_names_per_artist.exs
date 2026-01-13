@@ -1,4 +1,4 @@
-defmodule Tunez.Repo.Migrations.MigrateResources1 do
+defmodule Tunez.Repo.Migrations.AddUniqueAlbumNamesPerArtist do
   @moduledoc """
   Updates resources based on their most recent snapshots.
 
@@ -21,9 +21,17 @@ defmodule Tunez.Repo.Migrations.MigrateResources1 do
     end
 
     create index(:albums, [:artist_id])
+
+    create unique_index(:albums, [:name, :artist_id],
+             name: "albums_unique_album_per_artist_index"
+           )
   end
 
   def down do
+    drop_if_exists unique_index(:albums, [:name, :artist_id],
+                     name: "albums_unique_album_per_artist_index"
+                   )
+
     drop_if_exists index(:albums, [:artist_id])
 
     drop constraint(:albums, "albums_artist_id_fkey")

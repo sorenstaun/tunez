@@ -109,8 +109,27 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "D5C6069115CEBA9D5AAD5FFD2E4A2AB4240B9D5CDDAF79B3A499CD92456456C9",
-  "identities": [],
+  "hash": "13C1865EAC42EE76672566C62B0E7E31613171931248C67FD415956FF2E2B790",
+  "identities": [
+    {
+      "all_tenants?": false,
+      "base_filter": null,
+      "index_name": "albums_unique_album_per_artist_index",
+      "keys": [
+        {
+          "type": "atom",
+          "value": "name"
+        },
+        {
+          "type": "atom",
+          "value": "artist_id"
+        }
+      ],
+      "name": "unique_album_per_artist",
+      "nils_distinct?": true,
+      "where": null
+    }
+  ],
   "multitenancy": {
     "attribute": null,
     "global": null,
