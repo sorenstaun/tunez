@@ -25,6 +25,10 @@ defmodule TunezWeb.Artists.ShowLive do
         <.h1>
           {@artist.name}
         </.h1>
+        <:subtitle :if={@artist.previous_names != []}>
+          (formerly known as
+          <%= Enum.intersperse(@artist.previous_names, ", ") %>)
+        </:subtitle>
         <:action>
           <.button_link
             kind="error"
@@ -149,6 +153,29 @@ defmodule TunezWeb.Artists.ShowLive do
 
       {:error, error} ->
         Logger.info("Could not delete artist '#{socket.assigns.artist.id}': #{inspect(error)}")
+
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("destroy-album", %{"id" => album_id}, socket) do
+    case Tunez.Music.destroy_album(album_id) do
+      :ok ->
+        artist = Tunez.Music.get_artist!(socket.assigns.artist.id, load: [:albums])
+
+        socket =
+          socket
+          |> assign(:artist, artist)
+          |> put_flash(:info, "Album deleted successfully")
+
+        {:noreply, socket}
+
+      {:error, error} ->
+        Logger.info("Could not delete album '#{album_id}': #{inspect(error)}")
+
+        socket =
+          socket
+          |> put_flash(:error, "Could not delete album")
 
         {:noreply, socket}
     end
