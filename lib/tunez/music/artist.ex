@@ -21,6 +21,7 @@ defmodule Tunez.Music.Artist do
       end
 
       filter expr(contains(name, ^arg(:query)))
+      pagination offset?: true, default_limit: 12
     end
 
     update :update do
@@ -35,7 +36,10 @@ defmodule Tunez.Music.Artist do
   attributes do
     uuid_primary_key :id
 
-    attribute :name, :string, allow_nil?: false
+    attribute :name, :string do
+      allow_nil? false
+      public? true
+    end
     attribute :biography, :string
 
     # Save all previous names an artist has had
@@ -43,8 +47,8 @@ defmodule Tunez.Music.Artist do
       default []
     end
 
-    create_timestamp :inserted_at
-    update_timestamp :updated_at
+    create_timestamp :inserted_at, public?: true
+    update_timestamp :updated_at, public?: true
   end
 
   relationships do
