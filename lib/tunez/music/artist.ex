@@ -20,7 +20,7 @@ defmodule Tunez.Music.Artist do
         default ""
       end
 
-      filter expr(ilike(name, ^arg(:query)))
+      filter expr(contains(name, ^arg(:query)))
     end
 
     update :update do
