@@ -23,11 +23,6 @@ defmodule Tunez.Music.Album do
       message: "must be a valid URL starting with http:// or /images"
   end
 
-  identities do
-    identity :unique_album_per_artist, [:name, :artist_id],
-      message: "An album with this name already exists for this artist"
-  end
-
   attributes do
     uuid_primary_key :id
 
@@ -61,6 +56,21 @@ defmodule Tunez.Music.Album do
         accept [:name, :year_released, :cover_image_url]
       end
     end
+
+    calculations do
+      calculate :years_ago, :integer, expr(2025 - year_released)
+
+      calculate(
+        :string_years_ago,
+        :string,
+        expr("Wow, this album was released " <> years_ago <> " years ago!")
+      )
+    end
+  end
+
+  identities do
+    identity :unique_album_per_artist, [:name, :artist_id],
+      message: "An album with this name already exists for this artist"
   end
 
   def next_year do

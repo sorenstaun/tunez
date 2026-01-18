@@ -40,6 +40,7 @@ defmodule Tunez.Music.Artist do
       allow_nil? false
       public? true
     end
+
     attribute :biography, :string
 
     # Save all previous names an artist has had
@@ -56,4 +57,15 @@ defmodule Tunez.Music.Artist do
       sort year_released: :desc
     end
   end
+
+  aggregates do
+    count :album_count, :albums do
+      public? true
+    end
+    first :latest_album_year_released, :albums, :year_released do
+      public? true
+    end
+    first :cover_image_url, :albums, :cover_image_url
+  end
+
 end
