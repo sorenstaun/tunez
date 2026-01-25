@@ -14,7 +14,7 @@ defmodule TunezWeb.Artists.FormLive do
     {:ok, socket}
   end
 
-  #Catch all function, if no data, then we create a new artist
+  # Catch all function, if no data, then we create a new artist
   def mount(_params, _session, socket) do
     form = Tunez.Music.form_to_create_artist()
 

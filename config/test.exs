@@ -1,4 +1,6 @@
 import Config
+config :tunez, token_signing_secret: "02HhVoCLDS2T6yZW00XZW1+5WKLLd+kK"
+config :bcrypt_elixir, log_rounds: 1
 config :ash, policies: [show_policy_breakdowns?: true], disable_async?: true
 
 # Configure your database
