@@ -4,7 +4,11 @@ defmodule Tunez.Accounts do
   json_api do
     routes do
       base_route "/users", Tunez.Accounts.User do
-        post :register_with_password, route: "/register"
+        post :register_with_password,
+          route: "/register",
+          metadata: fn _subject, user, _request ->
+            %{token: user.__metadata__.token}
+          end
       end
     end
   end

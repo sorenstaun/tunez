@@ -1,5 +1,6 @@
 defmodule TunezWeb.Artists.ShowLive do
   use TunezWeb, :live_view
+  on_mount {TunezWeb.LiveUserAuth, :current_user}
 
   require Logger
 
