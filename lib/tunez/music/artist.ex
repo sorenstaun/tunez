@@ -109,12 +109,12 @@ defmodule Tunez.Music.Artist do
     end
 
     policy action(:update) do
-      authorize_if actor_attribute(:role, :editor)
-      authorize_if actor_attribute(:role, :admin)
+      authorize_if actor_attribute_equals(:role, :editor)
+      authorize_if actor_attribute_equals(:role, :admin)
     end
 
     policy action(:destroy) do
-      authorize_if actor_attribute(:role, :admin)
+      authorize_if actor_attribute_equals(:role, :admin)
     end
   end
 end
