@@ -3,7 +3,8 @@ defmodule Tunez.Music.Album do
     otp_app: :tunez,
     domain: Tunez.Music,
     data_layer: AshPostgres.DataLayer,
-    extensions: [AshJsonApi.Resource]
+    extensions: [AshJsonApi.Resource],
+    authorizers: [Ash.Policy.Authorizer]
 
   json_api do
     type "album"
@@ -78,6 +79,9 @@ defmodule Tunez.Music.Album do
         expr("Wow, this album was released " <> years_ago <> " years ago!")
       )
     end
+
+    belongs_to :created_by, Tunez.Accounts.User
+    belongs_to :updated_by, Tunez.Accounts.User
   end
 
   def next_year do
@@ -87,5 +91,29 @@ defmodule Tunez.Music.Album do
   identities do
     identity :unique_album_per_artist, [:name, :artist_id],
       message: "An album with this name already exists for this artist"
+  end
+
+  changes do
+    change relate_actor(:created_by, allow_nil?: true), on: [:create]
+    change relate_actor(:updated_by, allow_nil?: true)
+  end
+
+  policies do
+    bypass actor_attribute_equals(:role, :admin) do
+      authorize_if always()
+    end
+
+    policy action(:read) do
+      authorize_if always()
+    end
+
+    policy action(:create) do
+      authorize_if actor_attribute_equals(:role, :editor)
+      authorize_if actor_attribute_equals(:role, :admin)
+    end
+
+    policy action([:update, :destroy]) do
+      authorize_if expr(^actor(:role) == :editor and created_by.id == ^actor(:id))
+    end
   end
 end

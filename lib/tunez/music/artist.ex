@@ -62,6 +62,34 @@ defmodule Tunez.Music.Artist do
     end
   end
 
+  policies do
+    policy action(:read) do
+      authorize_if always()
+    end
+
+    policy action(:search) do
+      authorize_if always()
+    end
+
+    policy action(:create) do
+      authorize_if always()
+    end
+
+    policy action(:update) do
+      authorize_if actor_attribute_equals(:role, :editor)
+      authorize_if actor_attribute_equals(:role, :admin)
+    end
+
+    policy action(:destroy) do
+      authorize_if actor_attribute_equals(:role, :admin)
+    end
+  end
+
+  changes do
+    change relate_actor(:created_by, allow_nil?: true), on: [:create]
+    change relate_actor(:updated_by, allow_nil?: true)
+  end
+
   attributes do
     uuid_primary_key :id
 
@@ -89,6 +117,9 @@ defmodule Tunez.Music.Artist do
       sort year_released: :desc
       public? true
     end
+
+    belongs_to :created_by, Tunez.Accounts.User
+    belongs_to :updated_by, Tunez.Accounts.User
   end
 
   aggregates do
@@ -101,28 +132,5 @@ defmodule Tunez.Music.Artist do
     end
 
     first :cover_image_url, :albums, :cover_image_url
-  end
-
-  policies do
-    policy action(:read) do
-      authorize_if always()
-    end
-
-    policy action(:search) do
-      authorize_if always()
-    end
-
-    policy action(:create) do
-      authorize_if always()
-    end
-
-    policy action(:update) do
-      authorize_if actor_attribute_equals(:role, :editor)
-      authorize_if actor_attribute_equals(:role, :admin)
-    end
-
-    policy action(:destroy) do
-      authorize_if actor_attribute_equals(:role, :admin)
-    end
   end
 end
