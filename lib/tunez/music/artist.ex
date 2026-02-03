@@ -104,6 +104,14 @@ defmodule Tunez.Music.Artist do
   end
 
   policies do
+    policy action(:read) do
+      authorize_if always()
+    end
+
+    policy action(:search) do
+      authorize_if always()
+    end
+
     policy action(:create) do
       authorize_if always()
     end

@@ -3,8 +3,11 @@ defmodule TunezWeb.Artists.FormLive do
 
   @spec mount(any(), any(), map()) :: {:ok, map()}
   def mount(%{"id" => artist_id}, _session, socket) do
-    artist = Tunez.Music.get_artist!(artist_id)
-    form = Tunez.Music.form_to_update_artist(artist)
+    artist = Tunez.Music.get_artist!(artist_id, actor: socket.assigns.current_user)
+
+    form =
+      Tunez.Music.form_to_update_artist(artist, actor: socket.assigns.current_user)
+      |> AshPhoenix.Form.ensure_can_submit!()
 
     socket =
       socket
@@ -16,7 +19,9 @@ defmodule TunezWeb.Artists.FormLive do
 
   # Catch all function, if no data, then we create a new artist
   def mount(_params, _session, socket) do
-    form = Tunez.Music.form_to_create_artist()
+    form =
+      Tunez.Music.form_to_create_artist(actor: socket.assigns.current_user)
+      |> AshPhoenix.Form.ensure_can_submit!()
 
     socket =
       socket
