@@ -23,3 +23,10 @@
   |> Ash.read(authorize?: false)
 
   
+  Ash.Type.generator(:map, fields: [ 
+    hello: [ 
+      type: {:array, :integer}, 
+      constraints: [min_length: 2, items: [min: -1000, max: 1000]]
+      ], 
+      world: [type: :uuid] ]) 
+      |> Enum.take(1)
