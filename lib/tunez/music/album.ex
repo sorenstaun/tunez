@@ -63,15 +63,26 @@ defmodule Tunez.Music.Album do
 
       create :create do
         accept [:name, :year_released, :cover_image_url, :artist_id]
+        argument :tracks, {:array, :map}
+        change manage_relationship(:tracks, type: :direct_control,
+        order_is_key: :order)
       end
 
       update :update do
         accept [:name, :year_released, :cover_image_url]
+        require_atomic? false
+        argument :tracks, {:array, :map}
+        change manage_relationship(:tracks, type: :direct_control, order_is_key: :order)
       end
+    end
+
+    aggregates do
+      sum :duration_seconds, :tracks, :duration_seconds
     end
 
     calculations do
       calculate :years_ago, :integer, expr(2025 - year_released)
+      calculate :duration, :string, Tunez.Music.Calculations.SecondsToMinutes
 
       calculate(
         :string_years_ago,

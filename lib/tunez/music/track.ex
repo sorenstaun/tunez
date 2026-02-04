@@ -2,7 +2,8 @@ defmodule Tunez.Music.Track do
   use Ash.Resource,
     otp_app: :tunez,
     domain: Tunez.Music,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    authorizers: [Ash.Policy.Authorizer]
 
   postgres do
     table "tracks"
@@ -18,13 +19,24 @@ defmodule Tunez.Music.Track do
 
     create :create do
       primary? true
-      accept [:order, :name, :duration_seconds]
+      accept [:order, :name, :duration_seconds, :album_id]
     end
 
     update :update do
       primary? true
       accept [:order, :name, :duration_seconds]
     end
+  end
+
+  policies do
+    policy always() do
+      authorize_if accessing_from(Tunez.Music.Album, :tracks)
+      authorize_if action_type(:read)
+    end
+  end
+
+  preparations do
+    prepare build(load: [:number, :duration])
   end
 
   attributes do
@@ -51,5 +63,10 @@ defmodule Tunez.Music.Track do
     belongs_to :album, Tunez.Music.Album do
       allow_nil? false
     end
+  end
+
+  calculations do
+    calculate :number, :integer, expr(order + 1)
+    calculate :duration, :string, Tunez.Music.Calculations.SecondsToMinutes
   end
 end
