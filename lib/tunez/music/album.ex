@@ -16,8 +16,63 @@ defmodule Tunez.Music.Album do
     repo Tunez.Repo
 
     references do
-      reference :artist, index?: true, on_delete: :delete
+      reference :artist, index?: true
     end
+  end
+
+  actions do
+    defaults [:read]
+
+    destroy :destroy do
+      primary? true
+      change cascade_destroy(:notifications, return_notifications?: true, after_action?: false)
+    end
+
+    create :create do
+      accept [:name, :year_released, :cover_image_url, :artist_id]
+      argument :tracks, {:array, :map}
+
+      change manage_relationship(:tracks,
+               type: :direct_control,
+               order_is_key: :order
+             )
+    end
+
+    update :update do
+      accept [:name, :year_released, :cover_image_url]
+      require_atomic? false
+      argument :tracks, {:array, :map}
+      change manage_relationship(:tracks, type: :direct_control, order_is_key: :order)
+    end
+  end
+
+  policies do
+    bypass actor_attribute_equals(:role, :admin) do
+      authorize_if always()
+    end
+
+    policy action(:read) do
+      authorize_if always()
+    end
+
+    policy action(:create) do
+      authorize_if actor_attribute_equals(:role, :editor)
+      authorize_if actor_attribute_equals(:role, :admin)
+    end
+
+    policy action([:update, :destroy]) do
+      authorize_if expr(can_manage_album?)
+    end
+  end
+
+  changes do
+    change Tunez.Accounts.Changes.SendNewAlbumNotification, on: [:create]
+    change relate_actor(:created_by, allow_nil?: true), on: [:create]
+    change relate_actor(:updated_by, allow_nil?: true)
+  end
+
+  def next_year do
+    Date.utc_today().year + 1
   end
 
   validations do
@@ -60,39 +115,6 @@ defmodule Tunez.Music.Album do
       public? true
     end
 
-    actions do
-      defaults [:read, :destroy]
-
-      create :create do
-        accept [:name, :year_released, :cover_image_url, :artist_id]
-        argument :tracks, {:array, :map}
-        change manage_relationship(:tracks, type: :direct_control,
-        order_is_key: :order)
-      end
-
-      update :update do
-        accept [:name, :year_released, :cover_image_url]
-        require_atomic? false
-        argument :tracks, {:array, :map}
-        change manage_relationship(:tracks, type: :direct_control, order_is_key: :order)
-      end
-    end
-
-    aggregates do
-      sum :duration_seconds, :tracks, :duration_seconds
-    end
-
-    calculations do
-      calculate :years_ago, :integer, expr(2025 - year_released)
-      calculate :duration, :string, Tunez.Music.Calculations.SecondsToMinutes
-
-      calculate(
-        :string_years_ago,
-        :string,
-        expr("Wow, this album was released " <> years_ago <> " years ago!")
-      )
-    end
-
     belongs_to :created_by, Tunez.Accounts.User
     belongs_to :updated_by, Tunez.Accounts.User
 
@@ -100,38 +122,32 @@ defmodule Tunez.Music.Album do
       sort order: :asc
       public? true
     end
+
+    has_many :notifications, Tunez.Accounts.Notification
   end
 
-  def next_year do
-    Date.utc_today().year + 1
+  calculations do
+    calculate :years_ago, :integer, expr(2025 - year_released)
+    calculate :duration, :string, Tunez.Music.Calculations.SecondsToMinutes
+
+    calculate :string_years_ago,
+              :string,
+              expr("Wow, this album was released " <> years_ago <> " years ago!")
+
+    calculate :can_manage_album?,
+              :boolean,
+              expr(
+                (^actor(:role) == :editor and created_by.id == ^actor(:id)) or
+                  ^actor(:role) == :admin
+              )
+  end
+
+  aggregates do
+    sum :duration_seconds, :tracks, :duration_seconds
   end
 
   identities do
     identity :unique_album_per_artist, [:name, :artist_id],
       message: "An album with this name already exists for this artist"
-  end
-
-  changes do
-    change relate_actor(:created_by, allow_nil?: true), on: [:create]
-    change relate_actor(:updated_by, allow_nil?: true)
-  end
-
-  policies do
-    bypass actor_attribute_equals(:role, :admin) do
-      authorize_if always()
-    end
-
-    policy action(:read) do
-      authorize_if always()
-    end
-
-    policy action(:create) do
-      authorize_if actor_attribute_equals(:role, :editor)
-      authorize_if actor_attribute_equals(:role, :admin)
-    end
-
-    policy action([:update, :destroy]) do
-      authorize_if expr(^actor(:role) == :editor and created_by.id == ^actor(:id))
-    end
   end
 end
